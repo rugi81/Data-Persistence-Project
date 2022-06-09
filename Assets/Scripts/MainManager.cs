@@ -61,7 +61,7 @@ public class MainManager : MonoBehaviour
                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
             }
         }
-        else if (m_GameOver && !scoreProcessed)
+        else if (m_GameOver)
         {
             if (Input.GetKeyDown(KeyCode.Space) && scoreProcessed)
             {
