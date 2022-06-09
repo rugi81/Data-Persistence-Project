@@ -12,16 +12,24 @@ public class MainManager : MonoBehaviour
 
     public Text ScoreText;
     public GameObject GameOverText;
+    public Text BestScoreText;
     
     private bool m_Started = false;
     private int m_Points;
-    
-    private bool m_GameOver = false;
+    private int m_rank;
+    private string m_Name;
 
-    
+    private bool m_GameOver = false;
+    private bool scoreProcessed = false;
+
+    [SerializeField] private GameObject highScoreUI;
+    [SerializeField] private GameObject bestScoreUI;
+
     // Start is called before the first frame update
     void Start()
     {
+        scoreProcessed = false;
+        SetBestScoreText();
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -53,11 +61,11 @@ public class MainManager : MonoBehaviour
                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
             }
         }
-        else if (m_GameOver)
+        else if (m_GameOver && !scoreProcessed)
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space) && scoreProcessed)
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                LoadTitle(); // SceneManager.GetActiveScene().buildIndex);
             }
         }
     }
@@ -71,6 +79,61 @@ public class MainManager : MonoBehaviour
     public void GameOver()
     {
         m_GameOver = true;
-        GameOverText.SetActive(true);
+
+        m_rank = TitleHandler.Instance.CheckHighScore(m_Points);
+        if (m_rank > -1)
+        {
+            scoreProcessed = false;
+            // show high score inputs;
+
+            if (m_rank == 0) // if first, show quote box.
+            {
+                bestScoreUI.SetActive(true);
+            }
+            else
+            {
+                highScoreUI.SetActive(true);
+            }
+        }
+        else
+        {
+            scoreProcessed = true;
+            GameOverText.SetActive(true);
+        }
+    }
+    
+    public void SaveHighScore( string name )
+    {
+        Debug.Log("'" + name + "'");
+        m_Name = name;
+        TitleHandler.Instance.AddHighScore(m_rank, m_Points, m_Name );
+        LoadTitle();
+    }
+
+    public void SetHighScoreName ( string name)
+    {
+        m_Name = name;
+    }
+
+    public void SaveBestScore( string quote )
+    {
+        Debug.Log(name + " " + m_rank);
+
+        TitleHandler.Instance.UpdateHighestScore(quote);
+        TitleHandler.Instance.AddHighScore(m_rank, m_Points, m_Name);
+        LoadTitle();
+    }
+
+    public void LoadTitle()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    public void SetBestScoreText()
+    {
+        int score = TitleHandler.Instance.GetBestScore();
+        string name = TitleHandler.Instance.GetBestName();
+
+        BestScoreText.text = "Best Score: " + name + " - " + score;
     }
 }
